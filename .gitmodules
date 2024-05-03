@@ -1,0 +1,3 @@
+[submodule "docs/hackupc"]
+	path = docs/hackupc
+	url = git@github.com:grafana/hackupc.git
