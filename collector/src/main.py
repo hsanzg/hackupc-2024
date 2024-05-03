@@ -7,11 +7,9 @@ def connect():
   conn_string = os.environ['MONGO_CONN']
   db_name = os.environ['MONGO_DB']
   coll_name = os.environ['MONGO_COLL']
-  if not conn_string:
-    print('missing MONGO_CONN')
-    exit(1)
   print(f'connecting to {conn_string}, db={db_name}, collection={coll_name}')
-  client = MongoClient(MONGO_CONN_STRING)
+  client = MongoClient(conn_string)
+  print('success!')
 
   # Our database and collection are both called "workplace"
   db = client[db_name]
@@ -21,6 +19,7 @@ def connect():
       'metaField': 'metadata',
       'granularity': 'seconds'
     })
+    print(f'created {coll_name}')
   else:
     collection = db[coll_name]
   return collection
