@@ -1,27 +1,32 @@
 from pymongo import MongoClient
 import os
 import datetime
+import fileinput
 
-MONGO_CONN_STRING = '127.0.0.1:27017'
-COLLECTION_NAME = 'metrics'
+def connect():
+  conn_string = os.environ['MONGO_CONN']
+  db_name = os.environ['MONGO_DB']
+  coll_name = os.environ['MONGO_COLL']
+  if not conn_string:
+    print('missing MONGO_CONN')
+    exit(1)
+  print(f'connecting to {conn_string}, db={db_name}, collection={coll_name}')
+  client = MongoClient(MONGO_CONN_STRING)
 
-print(f'connecting to {MONGO_CONN_STRING}')
-client = MongoClient(MONGO_CONN_STRING)
-
-# Our database and collection are both called "workplace"
-db = client.metrics
-
-if COLLECTION_NAME not in db.list_collection_names():
-  collection = db.create_collection('metrics', timeseries={
-    'timeField': 'timestamp',
-    'metaField': 'metadata',
-    'granularity': 'seconds'
-  })
-else:
-  collection = db.metrics
+  # Our database and collection are both called "workplace"
+  db = client[db_name]
+  if coll_name not in db.list_collection_names():
+    collection = db.create_collection(coll_name, timeseries={
+      'timeField': 'timestamp',
+      'metaField': 'metadata',
+      'granularity': 'seconds'
+    })
+  else:
+    collection = db[coll_name]
+  return collection
 
 # warning: this method modifies the passed `metrics` object
-def upload(metrics):
+def upload(collection, metrics):
   time = datetime.now() # todo: utcnow?
   count = len(metrics.keys())
   print(f'[{time}] uploading {count} metrics')
@@ -29,6 +34,13 @@ def upload(metrics):
   metrics['timestamp'] = time
   collection.insert_one(metrics)
 
-upload({
-  'temperature': 42.0
-})
+if __name__ == '__main__':
+  print('starting up')
+  #collection = connect()
+  # Read numbers output through serial from ESP32 board.
+  for line in fileinput.input(encoding='utf-8'):
+    raw_temp, raw_hum = line.split(',')
+    upload(collection, {
+      'temp': float(raw_temp),
+      'hum': float(raw_hum)
+    })

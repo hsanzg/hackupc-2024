@@ -11,6 +11,10 @@ services:
         image: python:3-alpine3.18
         build: ./collector
         restart: "unless-stopped"
+        environment:
+          - MONGO_CONN
+          - MONGO_DB
+          - MONGO_COLL
 
     grafana:
         image: grafana/grafana-oss:latest-ubuntu
