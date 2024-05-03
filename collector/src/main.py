@@ -36,7 +36,7 @@ def upload(collection, metrics):
 
 if __name__ == '__main__':
   print('starting up')
-  #collection = connect()
+  collection = connect()
   # Read numbers output through serial from ESP32 board.
   for line in fileinput.input(encoding='utf-8'):
     raw_temp, raw_hum = line.split(',')
