@@ -1,0 +1,22 @@
+version: "3.7"
+
+services:
+    metrics:
+        image: mongo:latest
+        restart: "unless-stopped"
+        ports:
+            - 27017:27017
+
+    collector:
+        image: python:3-alpine3.18
+        build: ./collector
+        restart: "unless-stopped"
+
+    grafana:
+        image: grafana/grafana-oss:latest-ubuntu
+        restart: "unless-stopped"
+        ports:
+            - 3000:3000
+        
+
+
