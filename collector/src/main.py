@@ -82,10 +82,11 @@ if __name__ == '__main__':
     sound = gen_next(sound_mean, sound_std_dev, sound)
     if rnd.binomial(1, sound_peak_p):
       sound += rnd.normal(2 * sound_std_dev, sound_std_dev / 2)
-    people = max(gen_next(people_mean, people_std_dev, people), 0)
+    people = gen_next(people_mean, people_std_dev, people)
     # Add extra noise scale to people.
     people += people_second_scale * np.sin(people_theta)
     people_theta += people_theta_delta
+    people = max(np.round(people), 0) # cap it, and round it
 
     if math.isnan(temp) or not (-20 < temp < 50) or not (0 < humidity < 100):
       print(f'failed checksum or invalid data (temp={temp}, hum={humidity}, sound={sound}); skipping')
@@ -97,5 +98,5 @@ if __name__ == '__main__':
               .field('humidity', humidity)\
               .field('co2', co2)\
               .field('sound', sound)\
-              .field('people', np.round(people))
+              .field('people', people)
         upload(write_api, p)
