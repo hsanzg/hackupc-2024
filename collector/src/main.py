@@ -57,7 +57,7 @@ people_mean = 20
 people_std_dev = 5
 people_theta = 0
 people_theta_delta = (2 * np.pi) / 3600 # have a period of one hour
-people_second_scale = 2 * people_std_dev
+people_second_scale = .01 * people_std_dev
 people = rnd.normal(people_mean, people_std_dev)
 
 def in_temp_range(val):
@@ -99,6 +99,7 @@ if __name__ == '__main__':
           print('temp value was probably in the "sound" field; skipping 2 floats')
         else:
           print('bad data overall, continuing reading')
+        continue
 
     # Update synthetic data.
     co2 = gen_next(co2_mean, co2_std_dev, co2)
@@ -107,7 +108,7 @@ if __name__ == '__main__':
       sound += rnd.normal(2 * sound_std_dev, sound_std_dev / 2)
     people = gen_next(people_mean, people_std_dev, people)
     # Add extra noise scale to people.
-    people += people_second_scale * np.sin(people_theta) + np.normal(0, people_std_dev / 2)
+    people += people_second_scale * np.sin(people_theta) + rnd.normal(0, people_std_dev / 2)
     people_theta += people_theta_delta
     people = max(np.round(people), 0) # cap it, and round it
     rel_people_diff = (people - people_mean) / people_mean
