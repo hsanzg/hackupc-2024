@@ -107,7 +107,7 @@ if __name__ == '__main__':
       sound += rnd.normal(2 * sound_std_dev, sound_std_dev / 2)
     people = gen_next(people_mean, people_std_dev, people)
     # Add extra noise scale to people.
-    people += people_second_scale * np.sin(people_theta) + np.normal(0, people_std_dev / 2)
+    people += people_second_scale * np.sin(people_theta) + rnd.normal(0, people_std_dev / 2)
     people_theta += people_theta_delta
     people = max(np.round(people), 0) # cap it, and round it
     rel_people_diff = (people - people_mean) / people_mean
