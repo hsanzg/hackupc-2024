@@ -1,9 +1,10 @@
+#!/usr/bin/python3
 from pymongo import MongoClient
 import os
 import serial
 import struct
 import datetime
-import fileinput
+import math
 
 def get_collection():
   conn_string = os.environ['MONGO_CONN']
@@ -42,12 +43,15 @@ def upload(collection, metrics):
 if __name__ == '__main__':
   print('starting up')
   port = get_esp_port()
-  collection = get_collection()
+  #collection = get_collection()
 
   while True:
     temp_bytes = port.read(4)
     temp = struct.unpack('f', temp_bytes)# little endian
-    print(f'temperature: {temp}ºC')
+    if math.isnan(temp):
+      print('failed checksum')
+    else:
+      print(f'temperature: {temp}ºC')
 
 
   # Read numbers output through serial from ESP32 board.
