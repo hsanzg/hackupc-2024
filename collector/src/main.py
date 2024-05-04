@@ -33,7 +33,7 @@ def get_esp_port():
   return serial.Serial('/dev/ttyUSB0', baudrate=9600)
 
 # Synthetic data parameters
-SD_DIFF_FACTOR = 5e-3
+SD_DIFF_FACTOR = 1e-2
 BIAS_FACTOR = 1e-4
 
 co2_mean = 700 # ppm
@@ -42,10 +42,14 @@ co2 = rnd.normal(co2_mean, co2_std_dev)
 
 sound_mean = 45 # dB
 sound_std_dev = 4
+sound_peak_p = 1 / (30 * 60)
 sound = rnd.normal(sound_mean, sound_std_dev)
 
 people_mean = 20
 people_std_dev = 5
+people_theta = 0
+people_theta_delta = (2 * np.pi) / 3600 # have a period of one hour
+people_second_scale = 2 * people_std_dev
 people = rnd.normal(people_mean, people_std_dev)
 
 def gen_next(mean, std_dev, prev):
@@ -76,7 +80,12 @@ if __name__ == '__main__':
     # Update synthetic data.
     co2 = gen_next(co2_mean, co2_std_dev, co2)
     sound = gen_next(sound_mean, sound_std_dev, sound)
+    if rnd.binomial(1, sound_peak_p):
+      sound += rnd.normal(2 * sound_std_dev, sound_std_dev / 2)
     people = max(gen_next(people_mean, people_std_dev, people), 0)
+    # Add extra noise scale to people.
+    people += people_second_scale * np.sin(people_theta)
+    people_theta += people_theta_delta
 
     if math.isnan(temp) or not (-20 < temp < 50) or not (0 < humidity < 100):
       print(f'failed checksum or invalid data (temp={temp}, hum={humidity}, sound={sound}); skipping')
