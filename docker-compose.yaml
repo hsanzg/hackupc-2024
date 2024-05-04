@@ -18,12 +18,14 @@ services:
         networks:
             net:
     collector:
+        privileged: true
         image: python:3-alpine3.18
         build: ./collector
         restart: "unless-stopped"
         devices:
           - "/dev/ttyUSB0:/dev/ttyUSB0:ro"
         environment:
+          - PYTHONUNBUFFERED
           - INFLUX_SERIES
           - INFLUX_BUCKET
           - INFLUX_ORG
