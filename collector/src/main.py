@@ -44,6 +44,10 @@ sound_mean = 45 # dB
 sound_std_dev = 4
 sound = rnd.normal(sound_mean, sound_std_dev)
 
+people_mean = 20
+people_std_dev = 5
+people = rnd.normal(people_mean, people_std_dev)
+
 def gen_next(mean, std_dev, prev):
   # bias the diff depending on how far we are from the mean.
   norm_diff_mean = BIAS_FACTOR * (prev - mean) / std_dev
@@ -72,15 +76,17 @@ if __name__ == '__main__':
     # Update synthetic data.
     co2 = gen_next(co2_mean, co2_std_dev, co2)
     sound = gen_next(sound_mean, sound_std_dev, sound)
+    people = max(gen_next(people_mean, people_std_dev, people), 0)
 
     if math.isnan(temp) or not (-20 < temp < 50) or not (0 < humidity < 100):
       print(f'failed checksum or invalid data (temp={temp}, hum={humidity}, sound={sound}); skipping')
     else:
-      print(f'uploading temp={temp}ºC, hum={humidity}%, sound={sound}db, co2={co2}ppm')
+      print(f'uploading temp={temp}ºC, hum={humidity}%, sound={sound}db, co2={co2}ppm, people={people}')
       if SHOULD_UPLOAD:
         p = Point('workplace')\
               .field('temperature', temp)\
               .field('humidity', humidity)\
               .field('co2', co2_current)\
-              .field('sound', sound)
+              .field('sound', sound)\
+              .field('people', np.round(people))
         upload(write_api, p)
