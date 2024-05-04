@@ -11,6 +11,8 @@ services:
         image: python:3-alpine3.18
         build: ./collector
         restart: "unless-stopped"
+        devices:
+        - "/dev/ttyUSB0:/dev/ttyUSB0:ro"
         environment:
           - MONGO_CONN
           - MONGO_DB
