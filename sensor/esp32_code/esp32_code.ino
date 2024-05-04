@@ -86,12 +86,4 @@ void loop() {
     delay(POLL_INTERVAL);
     elapsed_ms += POLL_INTERVAL;
   }
-<<<<<<< HEAD
-=======
-  total_sound += (double) analogRead(MICROPHONE_ANALOG_PIN);
-  delay(POLL_INTERVAL);
-  // Serial.print("Elapsed millis: ");
-  // Serial.println(elapsed_ms);
-  elapsed_ms += POLL_INTERVAL;
->>>>>>> 358e4149bca284d6211bae22c708d897bbbc837d
 }
