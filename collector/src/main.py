@@ -30,21 +30,25 @@ if __name__ == '__main__':
     random.seed(2024)
   else:
     port = get_esp_port()
-  write_api = get_write_api()
+  if SHOULD_UPLOAD:
+    write_api = get_write_api()
 
   while True:
     if True:
       temp = random.uniform(22, 24)
       humidity = random.uniform(40, 50)
+      sound = random.uniform(0, 255)
     else:
-      measurement_bytes = port.read(8)
-      temp, humidity = struct.unpack('f', measurement_bytes)# little endian
+      measurement_bytes = port.read(12)
+      temp, humidity, sound = struct.unpack('fff', measurement_bytes)# little endian
     if math.isnan(temp):
       assert(math.isnan(humidity))
       print('failed checksum')
     else:
-      print(f'uploading temperature: {temp}ºC and hum {humidity}')
-      p = Point('workplace')\
-            .field('temperature', temp)\
-            .field('humidity', humidity)
-      upload(write_api, p)
+      print(f'uploading temperature: {temp}ºC, hum {humidity}%, sound {sound}')
+      if SHOULD_UPLOAD:
+        p = Point('workplace')\
+              .field('temperature', temp)\
+              .field('humidity', humidity)\
+              .field('sound', sound)
+        upload(write_api, p)
