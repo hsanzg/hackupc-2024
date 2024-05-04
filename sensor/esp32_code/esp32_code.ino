@@ -1,9 +1,21 @@
-// Arduino and KY-015 module
-
 #define DHT11_OUTPUT 14
+#define MICROPHONE_ANALOG_PIN 26
+#define ON_BOARD_LED 1
 #define NAN (0.0 / 0.0)
 
+// int digitalVal;       // digital readings
+int analog_val;        // analog readings
+
 byte measurements[5];  // array to store temp. and humidity values
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(DHT11_OUTPUT, OUTPUT);
+  // pinMode(ON_BOARD_LED, OUTPUT);
+  // pinMode(MICROPHONE_DIGITAL_PIN, INPUT);
+  // pinMode(MICROPHONE_ANALOG_PIN, INPUT);
+}
 
 byte get_value()
 {
@@ -41,33 +53,20 @@ float dec_to_float(byte *measurement) { // two bytes
   return ((float) measurement[0]) + (((float) measurement[1]) / 10.);
 }
 
-void setup() {
-  Serial.begin(9600);
-  pinMode(DHT11_OUTPUT, OUTPUT);
-}
 
 void loop() {
   // get data from module
   dht();
-
-  /*Serial.print("Humdity = ");
-  Serial.print(temp_humidity[0], DEC);
-  Serial.print(".");
-  Serial.print(temp_humidity[1], DEC);
-  Serial.println("%");
-  Serial.print("Temperature = ");
-  Serial.print(temp_humidity[2], DEC);
-  Serial.print(".");
-  Serial.print(temp_humidity[3], DEC);
-  Serial.print(" degC");*/
+  analog_val = analogRead(MICROPHONE_ANALOG_PIN);
 
   byte checksum = measurements[0] + measurements[1] + measurements[2] + measurements[3];
-  float values[2] = {NAN, NAN}; // Assume measurement is invalid by default.
+  float values[3] = {NAN, NAN, NAN}; // Assume measurement is invalid by default.
   if (true) { // supposed to be checksum == measurements[4], but the sensor seems to produce wrong values somehow
     // Data is valid! Convert it to floating point values.
-    float *temp = &values[0], *humidity = &values[1];
+    float *temp = &values[0], *humidity = &values[1], *sound = &values[2];
     *temp = dec_to_float(&measurements[2]);
     *humidity = dec_to_float(&measurements[0]);
+    *sound = analog_val;
   }
   byte *raw_values = (byte*) values;
   Serial.write(raw_values, sizeof(values));
