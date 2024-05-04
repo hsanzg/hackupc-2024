@@ -9,25 +9,27 @@ services:
         volumes:
             - metrics-data:/var/lib/influxdb
         environment:
-            - INFLUX_SERIES
-            - INFLUX_BUCKET
-            - INFLUX_ORG
-            - INFLUX_URL
-            - INFLUX_TOKEN
-            - DOCKER_INFLUXDB_INIT_MODE
-            - USE_FAKE_DATA
+          - DOCKER_INFLUXDB_INIT_MODE=setup
+          - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USER}
+          - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASSWORD}
+          - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
+          - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
+          - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUX_TOKEN}
 
     collector:
         image: python:3-alpine3.18
         build: ./collector
         restart: "unless-stopped"
-        devices:
-        - "/dev/ttyUSB0:/dev/ttyUSB0:ro"
+        # devices:
+        # - "/dev/ttyUSB0:/dev/ttyUSB0:ro"
         environment:
-          - MONGO_CONN
-          - MONGO_DB
-          - MONGO_COLL
-
+          - INFLUX_SERIES
+          - INFLUX_BUCKET
+          - INFLUX_ORG
+          - INFLUX_URL
+          - INFLUX_TOKEN
+          - USE_FAKE_DATA
+    
     grafana:
         image: grafana/grafana-oss:latest-ubuntu
         restart: "unless-stopped"

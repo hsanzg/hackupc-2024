@@ -74,7 +74,9 @@ double total_sound = 0.;
 void loop() {
   if (elapsed_ms >= SEND_INTERVAL) {
     // Update data from module temperature and humidity sensor.
+    // Serial.println("ehooooo");
     dht();
+    // Serial.println("Insideeeee");
     // Calculate average sound.
     send_payload((float) (total_sound / (POLLS_PER_SEND - 1)));
     // Reset clock and total sound.
@@ -84,4 +86,12 @@ void loop() {
     delay(POLL_INTERVAL);
     elapsed_ms += POLL_INTERVAL;
   }
+<<<<<<< HEAD
+=======
+  total_sound += (double) analogRead(MICROPHONE_ANALOG_PIN);
+  delay(POLL_INTERVAL);
+  // Serial.print("Elapsed millis: ");
+  // Serial.println(elapsed_ms);
+  elapsed_ms += POLL_INTERVAL;
+>>>>>>> 358e4149bca284d6211bae22c708d897bbbc837d
 }
