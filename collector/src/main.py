@@ -90,9 +90,11 @@ if __name__ == '__main__':
       if not in_temp_range(temp):
         print(f'detected wrong temperature {temp}; did you perform some surgery on the sensors?')
         if in_temp_range(humidity):
+          # sound,temp,hum,[sound]
           print('temp value was probably in the "hum" field; skipping 1 float')
           port.read(4)
         elif in_temp_range(_sound):
+          # hum,sound,temp,[hum],[sound]
           port.read(8)
           print('temp value was probably in the "sound" field; skipping 2 floats')
         else:
