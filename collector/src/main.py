@@ -1,15 +1,11 @@
 #!/usr/bin/python3
-from influxdb_client import InfluxDBClient, Point
-from influxdb_client.client.write_api import SYNCHRONOUS
 import os
-import serial
 import random
 import struct
 import math
 import time
-
-def get_esp_port():
-  return serial.Serial('/dev/ttyUSB0', baudrate=9600)
+import numpy as np
+from numpy import random as rnd
 
 url = os.getenv('INFLUX_URL')
 token = os.getenv('INFLUX_TOKEN')
@@ -17,6 +13,13 @@ org = os.getenv('INFLUX_ORG')
 bucket = os.getenv('INFLUX_BUCKET')
 USE_FAKE_DATA = os.getenv('USE_FAKE_DATA') == 'yes'
 SHOULD_UPLOAD = url is not None
+
+if not USE_FAKE_DATA:
+  import serial
+
+if SHOULD_UPLOAD:
+  from influxdb_client import InfluxDBClient, Point
+  from influxdb_client.client.write_api import SYNCHRONOUS
 
 def get_write_api():
     client = InfluxDBClient(url=url, token=token, org=org)
@@ -26,33 +29,58 @@ def get_write_api():
 def upload(write_api, point):
   write_api.write(bucket=bucket, org=org, record=point)
 
+def get_esp_port():
+  return serial.Serial('/dev/ttyUSB0', baudrate=9600)
+
+# Synthetic data parameters
+SD_DIFF_FACTOR = 5e-3
+BIAS_FACTOR = 1e-4
+
+co2_mean = 700 # ppm
+co2_std_dev = 100
+co2 = rnd.normal(co2_mean, co2_std_dev)
+
+sound_mean = 45 # dB
+sound_std_dev = 4
+sound = rnd.normal(sound_mean, sound_std_dev)
+
+def gen_next(mean, std_dev, prev):
+  # bias the diff depending on how far we are from the mean.
+  norm_diff_mean = BIAS_FACTOR * (prev - mean) / std_dev
+  diff = rnd.normal(-norm_diff_mean, std_dev * SD_DIFF_FACTOR)
+  return prev + diff
+
 if __name__ == '__main__':
-  print('starting uppp')
-  if True:
-    random.seed(2024)
+  print('starting up')
+  if USE_FAKE_DATA:
+    print('using synthetic temp and humidity data')
   else:
     port = get_esp_port()
   if SHOULD_UPLOAD:
+    print('uploading to db')
     write_api = get_write_api()
 
   while True:
-    if True:
-      temp = random.uniform(22, 24)
-      humidity = random.uniform(40, 50)
-      sound = random.uniform(0, 255)
-      time.sleep(2)
-      
+    if USE_FAKE_DATA:
+      temp = rnd.normal(23, 1)
+      humidity = rnd.normal(45, 3)
+      time.sleep(1)
     else:
-      measurement_bytes = port.read(12)
-      temp, humidity, sound = struct.unpack('fff', measurement_bytes)# little endian
+      measurement_bytes = port.read(12) # waits to receive from ESP32.
+      temp, humidity, _sound = struct.unpack('fff', measurement_bytes) # little endian
+
+    # Update synthetic data.
+    co2 = gen_next(co2_mean, co2_std_dev, co2)
+    sound = gen_next(sound_mean, sound_std_dev, sound)
+
     if math.isnan(temp) or not (-20 < temp < 50) or not (0 < humidity < 100):
-      assert(math.isnan(humidity))
       print(f'failed checksum or invalid data (temp={temp}, hum={humidity}, sound={sound}); skipping')
     else:
-      print(f'uploading temperature: {temp}ºC, hum {humidity}%, sound {sound}')
+      print(f'uploading temp={temp}ºC, hum={humidity}%, sound={sound}db, co2={co2}ppm')
       if SHOULD_UPLOAD:
         p = Point('workplace')\
               .field('temperature', temp)\
               .field('humidity', humidity)\
+              .field('co2', co2_current)\
               .field('sound', sound)
         upload(write_api, p)
