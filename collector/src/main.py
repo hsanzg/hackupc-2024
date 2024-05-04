@@ -37,5 +37,6 @@ if __name__ == '__main__':
     else:
       print(f'uploading temperature: {temp}ºC')
       p = Point('workplace')\
-            .field("temperature", temp)\
+            .field('temperature', temp)\
+            .field('humidity', 0)
       upload(write_api, p)

@@ -1,8 +1,9 @@
 // Arduino and KY-015 module
 
 #define DHT11_OUTPUT 14
+#define NAN (0.0 / 0.0)
 
-byte temp_humidity[5];  // array to store temp. and humidity values
+byte measurements[5];  // array to store temp. and humidity values
 
 byte get_value()
 {
@@ -31,9 +32,13 @@ void dht()
   if (digitalRead(DHT11_OUTPUT) == LOW)
     delayMicroseconds(80); // wait for 80 microSeconds
   for (int i = 0; i < 5; i++) // receive temperature and humidity values
-    temp_humidity[i] = get_value();
+    measurements[i] = get_value();
   pinMode(DHT11_OUTPUT, OUTPUT);    // change pin 10 mode to ouptut
   digitalWrite(DHT11_OUTPUT, HIGH); // set pin 10 to HIGH
+}
+
+float dec_to_float(byte *measurement) { // two bytes
+  return ((float) measurement[0]) + (((float) measurement[1]) / 10.);
 }
 
 void setup() {
@@ -45,7 +50,7 @@ void loop() {
   // get data from module
   dht();
 
-  Serial.print("Humdity = ");
+  /*Serial.print("Humdity = ");
   Serial.print(temp_humidity[0], DEC);
   Serial.print(".");
   Serial.print(temp_humidity[1], DEC);
@@ -54,14 +59,16 @@ void loop() {
   Serial.print(temp_humidity[2], DEC);
   Serial.print(".");
   Serial.print(temp_humidity[3], DEC);
-  Serial.print(" degC");
+  Serial.print(" degC");*/
 
-  byte checksum = temp_humidity[0] + temp_humidity[1] + temp_humidity[2] + temp_humidity[3];
-
-  if (temp_humidity[4] != checksum)
-    Serial.write(temp_humidity, 5);
-  else
-    Serial.println(" << OK");
-
+  byte checksum = measurements[0] + measurements[1] + measurements[2] + measurements[3];
+  float values[2] = {NAN, NAN}; // Assume measurement is invalid by default.
+  if (checksum == measurements[4]) {
+    // Data is valid! Convert it to floating point values.
+    float *temp = &values[0], *humidity = &values[1];
+    *temp = dec_to_float(&measurements[2]);
+    *humidity = dec_to_float(&measurements[0]);
+  }
+  Serial.write(values, sizeof(values));
   delay(1000);
 }
