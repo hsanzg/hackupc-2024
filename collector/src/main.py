@@ -6,6 +6,7 @@ import serial
 import random
 import struct
 import math
+import time
 
 def get_esp_port():
   return serial.Serial('/dev/ttyUSB0', baudrate=9600)
@@ -26,7 +27,7 @@ def upload(write_api, point):
   write_api.write(bucket=bucket, org=org, record=point)
 
 if __name__ == '__main__':
-  print('starting up')
+  print('starting uppp')
   if True:
     random.seed(2024)
   else:
@@ -39,6 +40,8 @@ if __name__ == '__main__':
       temp = random.uniform(22, 24)
       humidity = random.uniform(40, 50)
       sound = random.uniform(0, 255)
+      time.sleep(2)
+      
     else:
       measurement_bytes = port.read(12)
       temp, humidity, sound = struct.unpack('fff', measurement_bytes)# little endian

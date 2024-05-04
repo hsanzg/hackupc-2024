@@ -4,8 +4,8 @@ services:
 
     metrics:
         image: influxdb:latest
-        ports:
-            - 8086:8086
+        expose:
+            - "8086"
         volumes:
             - metrics-data:/var/lib/influxdb
         environment:
@@ -15,7 +15,8 @@ services:
           - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
           - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
           - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUX_TOKEN}
-
+        networks:
+            net:
     collector:
         image: python:3-alpine3.18
         build: ./collector
@@ -29,7 +30,9 @@ services:
           - INFLUX_URL
           - INFLUX_TOKEN
           - USE_FAKE_DATA
-    
+        networks:
+            net:
+
     grafana:
         image: grafana/grafana-oss:latest-ubuntu
         restart: "unless-stopped"
@@ -37,9 +40,15 @@ services:
             - 3000:3000
         volumes:
             - grafana-data:/var/lib/grafana
+        networks:
+            net:
 
 volumes:
     metrics-data:
         external: false
     grafana-data:
         external: false
+
+networks:
+    net:
+      external: false
