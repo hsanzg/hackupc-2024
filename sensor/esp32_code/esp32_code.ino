@@ -3,7 +3,7 @@
 #define ON_BOARD_LED 1
 #define NAN (0.0 / 0.0)
 #define SEND_INTERVAL 1000 // send data every `SEND_INTERVAL` ms
-#define POLL_INTERVAL 5 // measure sound intensity every `POLL_INTERVAL` ms
+#define POLL_INTERVAL 1000 // measure sound intensity every `POLL_INTERVAL` ms
 #define POLLS_PER_SEND (SEND_INTERVAL / POLL_INTERVAL)
 
 // int digitalVal;       // digital readings
@@ -20,8 +20,7 @@ void setup() {
   pinMode(MICROPHONE_ANALOG_PIN, INPUT);
 }
 
-byte get_value()
-{
+byte get_value() {
   byte i = 0;
   byte value = 0;
   for (i = 0; i < 8; i++) {
@@ -33,8 +32,8 @@ byte get_value()
   }
   return value;
 }
-// function to get temperature and humidity values from dht11
 
+// Retrieve temperature and humidity values from dht11.
 void dht()
 {
   digitalWrite(DHT11_OUTPUT, LOW);  // set pin LOW to start communication with module
@@ -77,11 +76,12 @@ void loop() {
     // Update data from module temperature and humidity sensor.
     dht();
     // Calculate average sound.
-    send_payload((float) (total_sound / POLLS_PER_SEND));
+    send_payload((float) (total_sound / (POLLS_PER_SEND - 1)));
     // Reset clock and total sound.
-    elapsed_ms = 0, total_sound = 0;
+    elapsed_ms = 0, total_sound = 0.;
+  } else {
+    total_sound += (double) analogRead(MICROPHONE_ANALOG_PIN);
+    delay(POLL_INTERVAL);
+    elapsed_ms += POLL_INTERVAL;
   }
-  total_sound += analogRead(MICROPHONE_ANALOG_PIN);
-  delay(POLL_INTERVAL);
-  elapsed_ms += POLL_INTERVAL;
 }

@@ -8,7 +8,7 @@ import struct
 import math
 
 def get_esp_port():
-  return serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=3.0)
+  return serial.Serial('/dev/ttyUSB0', baudrate=9600)
 
 INFLUX_SERIES = os.getenv('INFLUX_SERIES')
 INFLUX_BUCKET = os.getenv('INFLUX_BUCKET')
@@ -45,9 +45,9 @@ if __name__ == '__main__':
     else:
       measurement_bytes = port.read(12)
       temp, humidity, sound = struct.unpack('fff', measurement_bytes)# little endian
-    if math.isnan(temp):
+    if math.isnan(temp) or not (-20 < temp < 50) or not (0 < humidity < 100):
       assert(math.isnan(humidity))
-      print('failed checksum')
+      print(f'failed checksum or invalid data (temp={temp}, hum={humidity}, sound={sound}); skipping')
     else:
       print(f'uploading temperature: {temp}ºC, hum {humidity}%, sound {sound}')
       if SHOULD_UPLOAD:
