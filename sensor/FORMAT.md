@@ -1,4 +1,4 @@
 ```
-<temperature>,<humidity>
+<temperature><humidity><sound>
 ```
-both values are floating point.
+all values are floating point.
