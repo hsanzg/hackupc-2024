@@ -8,7 +8,7 @@ import struct
 import math
 
 def get_esp_port():
-  return serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=3.0)
+  return serial.Serial('/dev/ttyUSB0', baudrate=9600)
 
 USE_FAKE_DATA = os.getenv('USE_FAKE_DATA') == 'yes'
 url = os.getenv('INFLUX_URL')

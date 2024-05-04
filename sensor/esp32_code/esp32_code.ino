@@ -3,7 +3,7 @@
 #define ON_BOARD_LED 1
 #define NAN (0.0 / 0.0)
 #define SEND_INTERVAL 1000 // send data every `SEND_INTERVAL` ms
-#define POLL_INTERVAL 5 // measure sound intensity every `POLL_INTERVAL` ms
+#define POLL_INTERVAL 1000 // measure sound intensity every `POLL_INTERVAL` ms
 #define POLLS_PER_SEND (SEND_INTERVAL / POLL_INTERVAL)
 
 // int digitalVal;       // digital readings
@@ -75,13 +75,17 @@ double total_sound = 0.;
 void loop() {
   if (elapsed_ms >= SEND_INTERVAL) {
     // Update data from module temperature and humidity sensor.
+    // Serial.println("ehooooo");
     dht();
+    // Serial.println("Insideeeee");
     // Calculate average sound.
     send_payload((float) (total_sound / POLLS_PER_SEND));
     // Reset clock and total sound.
     elapsed_ms = 0, total_sound = 0;
   }
-  total_sound += analogRead(MICROPHONE_ANALOG_PIN);
+  total_sound += (double) analogRead(MICROPHONE_ANALOG_PIN);
   delay(POLL_INTERVAL);
+  // Serial.print("Elapsed millis: ");
+  // Serial.println(elapsed_ms);
   elapsed_ms += POLL_INTERVAL;
 }
