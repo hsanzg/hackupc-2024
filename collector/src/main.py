@@ -43,7 +43,7 @@ def upload(collection, metrics):
 if __name__ == '__main__':
   print('starting up')
   port = get_esp_port()
-  #collection = get_collection()
+  # collection = get_collection()
 
   while True:
     temp_bytes = port.read(4)
