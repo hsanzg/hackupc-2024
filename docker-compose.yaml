@@ -1,11 +1,20 @@
 version: "3.7"
 
 services:
+
     metrics:
-        image: mongo:latest
-        restart: "unless-stopped"
+        image: influxdb:latest
         ports:
-            - 27017:27017
+            - 8086:8086
+        volumes:
+            - metrics-data:/var/lib/influxdb
+        environment:
+            - INFLUX_SERIES
+            - INFLUX_BUCKET
+            - INFLUX_ORG
+            - INFLUX_URL
+            - INFLUX_TOKEN
+            - DOCKER_INFLUXDB_INIT_MODE
 
     collector:
         image: python:3-alpine3.18
@@ -21,6 +30,11 @@ services:
         restart: "unless-stopped"
         ports:
             - 3000:3000
-        
+        volumes:
+            - grafana-data:/var/lib/grafana
 
-
+volumes:
+    metrics-data:
+        external: false
+    grafana-data:
+        external: false

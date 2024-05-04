@@ -9,13 +9,13 @@ import math
 def get_esp_port():
   return serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=3.0)
 
-INFLUX_SERIES = os.environ['INFLUX_SERIES']
-INFLUX_BUCKET = os.environ['INFLUX_BUCKET']
-INFLUX_ORG = os.environ['INFLUX_ORG']
+INFLUX_SERIES = os.getenv('INFLUX_SERIES')
+INFLUX_BUCKET = os.getenv('INFLUX_BUCKET')
+INFLUX_ORG = os.getenv('INFLUX_ORG')
 
 def get_write_api():
-  url = os.environ['INFLUX_URL']
-  token = os.environ['INFLUX_TOKEN']
+  url = os.getenv('INFLUX_URL')
+  token = os.getenv('INFLUX_TOKEN')
   print(f'connecting to {url} at org={INFLUX_ORG} ')
   client = InfluxDBClient(url=url, token=token, org=INFLUX_ORG)
   return client.write_api(write_options=SYNCHRONOUS)
