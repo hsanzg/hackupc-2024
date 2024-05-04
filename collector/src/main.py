@@ -45,7 +45,7 @@ if __name__ == '__main__':
       assert(math.isnan(humidity))
       print('failed checksum')
     else:
-      print(f'uploading temperature: {temp}ºC and hum {humidity}')
+      print(f'uploading temperature: {temp}ºC and hum {humidity}%')
       p = Point('workplace')\
             .field('temperature', temp)\
             .field('humidity', humidity)
