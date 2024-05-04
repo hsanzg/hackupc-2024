@@ -30,13 +30,14 @@ if __name__ == '__main__':
 
   # Continuously read measurements from ESP32 board.
   while True:
-    temp_bytes = port.read(4)
-    temp = struct.unpack('f', temp_bytes)# little endian
+    measurement_bytes = port.read(4)
+    temp, humidity = struct.unpack('f', measurement_bytes)# little endian
     if math.isnan(temp):
+      assert(math.isnan(humidity))
       print('failed checksum')
     else:
-      print(f'uploading temperature: {temp}ºC')
+      print(f'uploading temperature: {temp}ºC and hum {humidity}')
       p = Point('workplace')\
             .field('temperature', temp)\
-            .field('humidity', 0)
+            .field('humidity', humidity)
       upload(write_api, p)
