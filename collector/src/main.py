@@ -86,7 +86,7 @@ if __name__ == '__main__':
         p = Point('workplace')\
               .field('temperature', temp)\
               .field('humidity', humidity)\
-              .field('co2', co2_current)\
+              .field('co2', co2)\
               .field('sound', sound)\
               .field('people', np.round(people))
         upload(write_api, p)
