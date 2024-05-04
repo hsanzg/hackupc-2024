@@ -1,9 +1,11 @@
 from pymongo import MongoClient
 import os
+import serial
+import struct
 import datetime
 import fileinput
 
-def connect():
+def get_collection():
   conn_string = os.environ['MONGO_CONN']
   db_name = os.environ['MONGO_DB']
   coll_name = os.environ['MONGO_COLL']
@@ -24,6 +26,10 @@ def connect():
     collection = db[coll_name]
   return collection
 
+def get_esp_port():
+  return serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=3.0)
+
+
 # warning: this method modifies the passed `metrics` object
 def upload(collection, metrics):
   time = datetime.now() # todo: utcnow?
@@ -35,11 +41,19 @@ def upload(collection, metrics):
 
 if __name__ == '__main__':
   print('starting up')
-  collection = connect()
+  port = get_esp_port()
+  collection = get_collection()
+
+  while True:
+    temp_bytes = port.read(4)
+    temp = struct.unpack('f', temp_bytes)# little endian
+    print(f'temperature: {temp}ºC')
+
+
   # Read numbers output through serial from ESP32 board.
-  for line in fileinput.input(encoding='utf-8'):
-    raw_temp, raw_hum = line.split(',')
-    upload(collection, {
-      'temp': float(raw_temp),
-      'hum': float(raw_hum)
-    })
+  #for line in fileinput.input(encoding='utf-8'):
+  #  raw_temp, raw_hum = line.split(',')
+  #  upload(collection, {
+  #    'temp': float(raw_temp),
+  #    'hum': float(raw_hum)
+  #  })
