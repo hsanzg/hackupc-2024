@@ -69,6 +69,7 @@ void loop() {
     *temp = dec_to_float(&measurements[2]);
     *humidity = dec_to_float(&measurements[0]);
   }
-  Serial.write(values, sizeof(values));
+  byte *raw_values = (byte*) values;
+  Serial.write(raw_values, sizeof(values));
   delay(1000);
 }
