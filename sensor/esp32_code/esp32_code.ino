@@ -2,6 +2,9 @@
 #define MICROPHONE_ANALOG_PIN 26
 #define ON_BOARD_LED 1
 #define NAN (0.0 / 0.0)
+#define SEND_INTERVAL 1000 // send data every `SEND_INTERVAL` ms
+#define POLL_INTERVAL 5 // measure sound intensity every `POLL_INTERVAL` ms
+#define POLLS_PER_SEND (SEND_INTERVAL / POLL_INTERVAL)
 
 // int digitalVal;       // digital readings
 int analog_val;        // analog readings
@@ -53,22 +56,32 @@ float dec_to_float(byte *measurement) { // two bytes
   return ((float) measurement[0]) + (((float) measurement[1]) / 10.);
 }
 
-
-void loop() {
-  // get data from module
-  dht();
-  analog_val = analogRead(MICROPHONE_ANALOG_PIN);
-
+void send_payload(float sound) {
   byte checksum = measurements[0] + measurements[1] + measurements[2] + measurements[3];
-  float values[3] = {NAN, NAN, NAN}; // Assume measurement is invalid by default.
+  float values[3] = {NAN, NAN, sound}; // Assume measurement is invalid by default.
   if (true) { // supposed to be checksum == measurements[4], but the sensor seems to produce wrong values somehow
     // Data is valid! Convert it to floating point values.
     float *temp = &values[0], *humidity = &values[1], *sound = &values[2];
     *temp = dec_to_float(&measurements[2]);
     *humidity = dec_to_float(&measurements[0]);
-    *sound = analog_val;
   }
   byte *raw_values = (byte*) values;
   Serial.write(raw_values, sizeof(values));
-  delay(1000);
+}
+
+int elapsed_ms = 0;
+double total_sound = 0.;
+
+void loop() {
+  if (elapsed_ms >= SEND_INTERVAL) {
+    // Update data from module temperature and humidity sensor.
+    dht();
+    // Calculate average sound.
+    send_payload((float) (total_sound / POLLS_PER_SEND));
+    // Reset clock and total sound.
+    elapsed_ms = 0, total_sound = 0;
+  }
+  total_sound += analogRead(MICROPHONE_ANALOG_PIN);
+  delay(POLL_INTERVAL);
+  elapsed_ms += POLL_INTERVAL;
 }
