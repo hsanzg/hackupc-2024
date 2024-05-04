@@ -17,7 +17,7 @@ void setup() {
   pinMode(DHT11_OUTPUT, OUTPUT);
   // pinMode(ON_BOARD_LED, OUTPUT);
   // pinMode(MICROPHONE_DIGITAL_PIN, INPUT);
-  // pinMode(MICROPHONE_ANALOG_PIN, INPUT);
+  pinMode(MICROPHONE_ANALOG_PIN, INPUT);
 }
 
 byte get_value()
