@@ -36,6 +36,8 @@ def get_esp_port():
 SD_DIFF_FACTOR = 1e-2
 BIAS_FACTOR = 1e-4
 
+min_normal_temp = 20
+max_normal_temp = 28
 temp_mean = 22.2
 hum_mean = 44
 temp_people_factor = .05
@@ -57,6 +59,9 @@ people_theta = 0
 people_theta_delta = (2 * np.pi) / 3600 # have a period of one hour
 people_second_scale = 2 * people_std_dev
 people = rnd.normal(people_mean, people_std_dev)
+
+def in_temp_range(val):
+  return min_normal_temp <= val <= max_normal_temp
 
 def gen_next(mean, std_dev, prev):
   # bias the diff depending on how far we are from the mean.
@@ -82,6 +87,16 @@ if __name__ == '__main__':
     else:
       measurement_bytes = port.read(12) # waits to receive from ESP32.
       temp, humidity, _sound = struct.unpack('fff', measurement_bytes) # little endian
+      if not in_temp_range(temp):
+        print(f'detected wrong temperature {temp}; did you perform some surgery on the sensors?')
+        if in_temp_range(humidity):
+          print('temp value was probably in the "hum" field; skipping 1 float')
+          port.read(4)
+        elif in_temp_range(_sound):
+          port.read(8)
+          print('temp value was probably in the "sound" field; skipping 2 floats')
+        else:
+          print('bad data overall, continuing reading')
 
     # Update synthetic data.
     co2 = gen_next(co2_mean, co2_std_dev, co2)
