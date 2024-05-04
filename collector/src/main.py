@@ -3,6 +3,7 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 import os
 import serial
+import random
 import struct
 import math
 
@@ -12,6 +13,7 @@ def get_esp_port():
 INFLUX_SERIES = os.getenv('INFLUX_SERIES')
 INFLUX_BUCKET = os.getenv('INFLUX_BUCKET')
 INFLUX_ORG = os.getenv('INFLUX_ORG')
+USE_FAKE_DATA = os.getenv('USE_FAKE_DATA') == 'yes'
 
 def get_write_api():
   url = os.getenv('INFLUX_URL')
@@ -25,13 +27,20 @@ def upload(write_api, point):
 
 if __name__ == '__main__':
   print('starting up')
-  port = get_esp_port()
+  if USE_FAKE_DATA:
+    random.seed(2024)
+  else:
+    port = get_esp_port()
   write_api = get_write_api()
 
   # Continuously read measurements from ESP32 board.
   while True:
-    measurement_bytes = port.read(4)
-    temp, humidity = struct.unpack('f', measurement_bytes)# little endian
+    if USE_FAKE_DATA:
+      temp = random.uniform(22, 24)
+      humidity = random.uniform(40, 50)
+    else:
+      measurement_bytes = port.read(8)
+      temp, humidity = struct.unpack('f', measurement_bytes)# little endian
     if math.isnan(temp):
       assert(math.isnan(humidity))
       print('failed checksum')
